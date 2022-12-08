@@ -17,14 +17,24 @@ class ObstacleManager:
             else:
                 self.obstacles.append(Cactus(SMALL_CACTUS, 320))
 
+        #if len(self.obstacles) == 0:
+            #bird = randint(Y_POS_LARGE_DOWN, Y_POS_LARGE_UP)
+            #if bird == 0:
+                #self.obstacles.append(Bird(Y_POS_LARGE_DOWN))
+            #else:
+                #self.obstacles.append(Bird(Y_POS_LARGE_UP))
+
         for obstacle in self.obstacles:
             obstacle.update(game.game_speed, self.obstacles)
             obstacle.rect.colliderect
             if game.player.dino_rect.colliderect(obstacle.rect):
                 pygame.time.delay(500)
                 game.playing = False 
-                
+                game.death_count += 1
 
     def draw(self, screen):
         for obstacle in self.obstacles:
             obstacle.draw(screen)
+
+    def reset_obstacles(self):
+        self.obstacles = []
