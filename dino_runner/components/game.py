@@ -80,6 +80,7 @@ class Game:
         self.screen.fill((255, 255, 255))
         half_screen_width = SCREEN_WIDTH // 2
         half_screen_height = SCREEN_HEIGHT // 2
+        font = pygame.font.Font(FONT_STYLE, 30)
 
         if not self.death_count:
             font = pygame.font.Font(FONT_STYLE, 30)
@@ -88,7 +89,20 @@ class Game:
             message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
             self.screen.blit(message, message_rect)
         else:
-            pass
+            message = font.render(f'Score: {self.score.current_score}', True, (0, 0, 0))
+            message_rect = message.get_rect()
+            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+            self.screen.blit(message, message_rect)
+
+            message = font.render(f'Deaths: {self.death_count}', True, (0, 0, 0))
+            message_rect = message.get_rect()
+            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2+30)
+            self.screen.blit(message, message_rect)
+
+            message = font.render(f'Press any key to start', True, (0, 0, 0))
+            message_rect = message.get_rect()
+            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2+60)
+            self.screen.blit(message, message_rect)
 
         self.screen.blit(DINO_START, (half_screen_width - 20, half_screen_height - 140))
         pygame.display.flip()
