@@ -2,9 +2,13 @@ import pygame
 
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
+from dino_runner.components.player_hearts.player_heart_manager import PlayerHeartManager
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 from dino_runner.components.score import FONT_STYLE, Score
 from dino_runner.utils.constants import BG, DINO_START, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS
+from dino_runner.utils.text_utils import draw_message_component
 
+INITIAL_GAME_SPEED = 20
 
 class Game:
     def __init__(self):
@@ -14,12 +18,14 @@ class Game:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.playing = False
-        self.game_speed = 20
+        self.game_speed = INITIAL_GAME_SPEED
         self.x_pos_bg = 0
         self.y_pos_bg = 380
 
         self.player = Dinosaur()
         self.obstacle_manager = ObstacleManager()
+        self.player_heart_manager = PlayerHeartManager()
+        self.power_up_manager = PowerUpManager()
         self.score = Score()
         self.death_count = 0
 
@@ -37,11 +43,13 @@ class Game:
         # Game loop: events - update - draw
         self.playing = True
         self.obstacle_manager.reset_obstacles()
+        self.power_up_manager.reset_power_ups()
+        self.score.current_score = 0
         while self.playing:
             self.events()
             self.update()
             self.draw()
-        
+
     def events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -53,7 +61,8 @@ class Game:
         self.player.update(user_input)
         self.obstacle_manager.update(self)
         self.score.update(self)
-
+        self.power_up_manager.update(self.score.current_score, self.game_speed, self.player)
+        
     def draw(self):
         self.clock.tick(FPS)
         self.screen.fill((255, 255, 255))
@@ -61,6 +70,8 @@ class Game:
         self.player.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
         self.score.draw(self.screen)
+        self.player_heart_manager.draw(self.screen)
+        self.power_up_manager.draw(self.screen)
         pygame.display.update()
         pygame.display.flip()
 
@@ -73,8 +84,6 @@ class Game:
             self.x_pos_bg = 0
         self.x_pos_bg -= self.game_speed
 
-    def draw_score(self):
-        pass 
 
     def show_menu(self):
         self.screen.fill((255, 255, 255))
@@ -83,26 +92,20 @@ class Game:
         font = pygame.font.Font(FONT_STYLE, 30)
 
         if not self.death_count:
-            font = pygame.font.Font(FONT_STYLE, 30)
-            message = font.render('Press any key to start', True, (0, 0, 0))
-            message_rect = message.get_rect()
-            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-            self.screen.blit(message, message_rect)
+            draw_message_component("Press any key to start", self.screen)
         else:
-            message = font.render(f'Score: {self.score.current_score}', True, (0, 0, 0))
-            message_rect = message.get_rect()
-            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-            self.screen.blit(message, message_rect)
-
-            message = font.render(f'Deaths: {self.death_count}', True, (0, 0, 0))
-            message_rect = message.get_rect()
-            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2+30)
-            self.screen.blit(message, message_rect)
-
-            message = font.render(f'Press any key to start', True, (0, 0, 0))
-            message_rect = message.get_rect()
-            message_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2+60)
-            self.screen.blit(message, message_rect)
+            draw_message_component("Press any key to restart", self.screen)
+            draw_message_component(f"Your score was: {self.score.current_score}", 
+            self.screen,
+            pos_y_center = half_screen_height + 50
+        
+            )
+            draw_message_component(
+                f"Death count: {self.death_count}",
+                self.screen,
+                pos_y_center = half_screen_height + 100
+            )
+            
 
         self.screen.blit(DINO_START, (half_screen_width - 20, half_screen_height - 140))
         pygame.display.flip()
